@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship
+from uuid import UUID, uuid4
+
+from sqlalchemy import String, UUID as SA_UUID
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.db import Base
 
@@ -7,12 +9,14 @@ from app.db import Base
 class Tag(Base):
     __tablename__ = 'tags'
 
-    id = Column(Integer, primary_key=True)
-    title = Column(String, nullable=False)
-    color = Column(Integer, nullable=False)
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    title: Mapped[str] = mapped_column(String, nullable=False)
+    color: Mapped[str] = mapped_column(String(9), nullable=False)
+    user_id: Mapped[UUID] = mapped_column(SA_UUID, nullable=False)
 
     notes = relationship(
         "Note",
         secondary="note_tags",
-        back_populates="tags"
+        back_populates="tags",
+        lazy = "selectin"
     )

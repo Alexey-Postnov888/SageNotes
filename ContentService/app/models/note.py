@@ -1,6 +1,7 @@
 import datetime
+from uuid import UUID, uuid4
 
-from sqlalchemy import Column, Integer, String, DateTime, Text, func
+from sqlalchemy import String, DateTime, Text, func, UUID as SA_UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.db import Base
@@ -9,9 +10,11 @@ from app.db import Base
 class Note(Base):
     __tablename__ = 'notes'
 
-    id = Column(Integer, primary_key=True)
-    title = Column(String)
-    content = Column(Text)
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+
+    title: Mapped[str] = mapped_column(String)
+    content: Mapped[str] = mapped_column(Text)
+    user_id: Mapped[UUID] = mapped_column(SA_UUID, nullable=False)
 
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),
@@ -30,9 +33,12 @@ class Note(Base):
         "Tag",
         secondary="note_tags",
         back_populates="notes",
+        lazy="selectin"
     )
 
     files = relationship(
-        "NoteFiles",
-        back_populates="note"
+        "File",
+        back_populates="note",
+        cascade="all, delete-orphan",
+        lazy="selectin"
     )

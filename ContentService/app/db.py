@@ -24,12 +24,11 @@ SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 Base = declarative_base()
 
+from .models.note import Note
+from .models.file import File
+from .models.note_tags import NoteTags
+from .models.tag import Tag
 
 async def init_database():
-    from .models.note import Note
-    from .models.note_files import NoteFiles
-    from .models.note_tags import NoteTags
-    from .models.tag import Tag
-
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
