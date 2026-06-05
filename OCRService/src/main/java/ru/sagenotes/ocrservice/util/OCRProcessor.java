@@ -3,6 +3,9 @@ package ru.sagenotes.ocrservice.util;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.PDFRenderer;
+import org.apache.pdfbox.Loader;
 import org.jspecify.annotations.NonNull;
 
 import javax.imageio.ImageIO;
@@ -11,6 +14,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
+import java.util.stream.IntStream;
 
 @Slf4j
 public class OCRProcessor {
@@ -21,7 +26,66 @@ public class OCRProcessor {
             "à", "le", "la", "en", "un", "et", "du", "se", "je", "ne", "pas", "ce", "ci", "ca", "ou", "au", "il", "on", "tu", "re"
     );
 
-    public String extractTextFromImage(File imageFile) {
+    public String extractTextFromPdf(File pdfFile) {
+        if (pdfFile == null || !pdfFile.exists()) {
+            log.error("Исходный PDF файл не существует.");
+            return "";
+        }
+
+        String fullPdfText = "";
+
+        try (PDDocument document = Loader.loadPDF(pdfFile)) {
+            PDFRenderer pdfRenderer = new PDFRenderer(document);
+            int pageCount = document.getNumberOfPages();
+
+            int totalCores = Runtime.getRuntime().availableProcessors();
+            int targetThreads = Math.max(1, (int) Math.ceil(totalCores * 0.25));
+
+            ForkJoinPool customThreadPool = new ForkJoinPool(targetThreads);
+
+            try {
+                return customThreadPool.submit(() ->
+                        IntStream.range(0, pageCount)
+                                .parallel()
+                                .mapToObj(page -> {
+                                    try {
+                                        BufferedImage bim;
+
+                                        synchronized (document) {
+                                            bim = pdfRenderer.renderImageWithDPI(page, 200);
+                                        }
+
+                                        File tempPageFile = File.createTempFile("pdf_page_" + page, ".png");
+                                        ImageIO.write(bim, "png", tempPageFile);
+
+                                        try {
+                                            return extractTextFromImage(tempPageFile, "pdf");
+                                        } finally {
+                                            tempPageFile.delete();
+                                        }
+                                    } catch (Exception e) {
+                                        log.error("Ошибка OCR на странице {}", page + 1, e);
+                                        return "";
+                                    }
+                                })
+                                .filter(text -> text != null && !text.trim().isEmpty())
+                                .reduce("", (accumulator, pageText) -> accumulator + pageText + "\n")
+                ).get();
+
+            } catch (Exception e) {
+                log.error("Ошибка выполнения многопоточного OCR: {}", e.getMessage(), e);
+                return "";
+            } finally {
+                customThreadPool.shutdown();
+            }
+        } catch (IOException e) {
+            log.error("Ошибка при обработке PDF файла: {}", e.getMessage(), e);
+        }
+
+        return fullPdfText.trim();
+    }
+
+    public String extractTextFromImage(File imageFile, String... type) {
         if (imageFile == null || !imageFile.exists()) {
             log.error("Исходный файл изображения не существует.");
             return "";
@@ -50,14 +114,18 @@ public class OCRProcessor {
         String bestText = "";
         double bestScore = -1.0;
 
-        for (String lang : languagesToTest) {
-            String rawText = runOcrForLanguage(convertedImageFile, lang, detectedType);
-            String cleanedText = cleanExtractedText(rawText, lang);
-            double score = calculateResultScore(cleanedText, lang);
+        if (type.length > 0 && type[0].equals("pdf")) {
+            bestText = runOcrForLanguage(convertedImageFile, "rus+eng", detectedType);
+        } else {
+            for (String lang : languagesToTest) {
+                String rawText = runOcrForLanguage(convertedImageFile, lang, detectedType);
+                String cleanedText = cleanExtractedText(rawText, lang);
+                double score = calculateResultScore(cleanedText, lang);
 
-            if (score > bestScore) {
-                bestScore = score;
-                bestText = cleanedText;
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestText = cleanedText;
+                }
             }
         }
 

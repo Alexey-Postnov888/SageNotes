@@ -46,20 +46,39 @@ public class OCRServiceImpl implements OCRService {
     }
 
     public String processFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
 
         try {
-            File tempFile = File.createTempFile("ocr",".tmp");
+            String contentType = file.getContentType();
+            String originalFilename = file.getOriginalFilename();
+
+            String suffix = ".tmp";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+
+            File tempFile = File.createTempFile("ocr_", suffix);
             file.transferTo(tempFile);
 
             OCRProcessor ocrProcessor = new OCRProcessor();
-            String extractedText = ocrProcessor.extractTextFromImage(tempFile);
+            String extractedText;
+
+            if ("application/pdf".equalsIgnoreCase(contentType) || suffix.equalsIgnoreCase(".pdf")) {
+                log.info("Запуск PDF OCR");
+                extractedText = ocrProcessor.extractTextFromPdf(tempFile);
+            } else {
+                log.info("Запуск Image OCR");
+                extractedText = ocrProcessor.extractTextFromImage(tempFile);
+            }
 
             tempFile.delete();
 
             return extractedText;
 
         } catch (IOException e) {
-            log.info("Error in processing image::{}", String.valueOf(e));
+            log.error("Ошибка при обработке файла в OCR сервисе: {}", e.getMessage(), e);
         }
 
         return null;

@@ -19,14 +19,13 @@ repositories {
     mavenCentral()
 }
 
-extra["springAiVersion"] = "2.0.0-M6"
-
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-restclient")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
-    implementation("org.springframework.ai:spring-ai-pdf-document-reader")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.apache.pdfbox:pdfbox:3.0.3")
     implementation("net.sourceforge.tess4j:tess4j:5.17.0")
     implementation("org.bytedeco:javacv-platform:1.5.13")
 
@@ -40,12 +39,6 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-}
-
-dependencyManagement {
-    imports {
-        mavenBom("org.springframework.ai:spring-ai-bom:${property("springAiVersion")}")
-    }
 }
 
 tasks.withType<Test> {

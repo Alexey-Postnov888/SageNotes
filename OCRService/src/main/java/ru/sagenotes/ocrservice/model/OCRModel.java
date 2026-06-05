@@ -1,5 +1,6 @@
 package ru.sagenotes.ocrservice.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
@@ -15,6 +16,7 @@ public class OCRModel {
     @Id
     private String fid;
     @Getter
+    @Column(columnDefinition = "TEXT")
     private String text;
     @Getter
     private String noteId;
