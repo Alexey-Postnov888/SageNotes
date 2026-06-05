@@ -1,9 +1,12 @@
 package ru.sagenotes.ocrservice.service;
 
-import org.springframework.web.multipart.MultipartFile;
+import ru.sagenotes.ocrservice.dto.OCRRequestListDTO;
 import ru.sagenotes.ocrservice.dto.OCRResponseDTO;
+import ru.sagenotes.ocrservice.dto.OCRResponseListDTO;
 
 public interface OCRService {
 
-    OCRResponseDTO processImage(MultipartFile file);
+    OCRResponseListDTO process(OCRRequestListDTO dto);
+    void createOCRModel(String fid, String text, String noteId);
+    OCRResponseDTO getOCR(String fid);
 }

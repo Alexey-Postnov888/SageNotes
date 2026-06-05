@@ -1,23 +1,30 @@
 package ru.sagenotes.ocrservice.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.*;
+import ru.sagenotes.ocrservice.dto.OCRRequestListDTO;
 import ru.sagenotes.ocrservice.dto.OCRResponseDTO;
+import ru.sagenotes.ocrservice.dto.OCRResponseListDTO;
 import ru.sagenotes.ocrservice.service.OCRService;
 
 @RestController
 @RequestMapping("/api/ocr")
 public class OCRController {
 
+    private final OCRService ocrService;
+
     @Autowired
-    private OCRService ocrService;
+    public OCRController(OCRService ocrService) {
+        this.ocrService = ocrService;
+    }
 
     @PostMapping("/upload")
-    public OCRResponseDTO handleFileUpload(@RequestParam("imageFile") MultipartFile imageFile) {
-        return ocrService.processImage(imageFile);
+    public OCRResponseListDTO handleFileUpload(@ModelAttribute OCRRequestListDTO dto) {
+        return ocrService.process(dto);
+    }
+
+    @GetMapping()
+    public OCRResponseDTO getOCR(String fid) {
+        return ocrService.getOCR(fid);
     }
 }

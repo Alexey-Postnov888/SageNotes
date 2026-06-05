@@ -4,11 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class OCRResponseDTO {
+public class OCRResponseListDTO {
 
-    private String fid;
-    private String text;
+    private String noteId;
+    private List<OCRResponseDTO> files;
 }
