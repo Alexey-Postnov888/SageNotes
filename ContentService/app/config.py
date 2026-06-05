@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -15,6 +15,5 @@ class Settings(BaseSettings):
             f"postgresql+asyncpg://{self.POSTGRES_CONTENT_USER}:{self.POSTGRES_CONTENT_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_CONTENT_DB}"
         )
 
-    model_config = SettingsConfigDict(extra='ignore')
 
 settings = Settings()
