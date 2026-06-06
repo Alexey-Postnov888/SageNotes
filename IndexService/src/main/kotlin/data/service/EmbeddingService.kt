@@ -1,0 +1,79 @@
+package ru.sagenotes.indexservice.data.service
+
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import kotlinx.serialization.json.*
+import ru.sagenotes.indexservice.data.config.QdrantConfig
+import ru.sagenotes.indexservice.data.model.request.EmbedRequestDto
+import ru.sagenotes.indexservice.data.model.response.EmbeddingsResponseDto
+
+interface EmbeddingService {
+    suspend fun embed(noteId: String, chunks: List<String>): List<String>
+}
+
+class EmbeddingServiceImpl(
+    private val httpClient: HttpClient,
+    config: QdrantConfig
+) : EmbeddingService {
+    private val qdrantBaseUrl = config.baseUrl
+
+    override suspend fun embed(noteId: String, chunks: List<String>): List<String> {
+        try {
+            val exists = httpClient.get("$qdrantBaseUrl/collections/notes_chunks").status == HttpStatusCode.OK
+            if (!exists) {
+                val res = httpClient.put("$qdrantBaseUrl/collections/notes_chunks") {
+                    contentType(ContentType.Application.Json)
+                    setBody(buildJsonObject {
+                        putJsonObject("vectors") {
+                            put("size", 384)
+                            put("distance", "Cosine")
+                        }
+                    })
+                }
+                println("collections/notes_chunks: ${res.bodyAsText()}")
+            }
+
+            val embeddingsResponse = httpClient.post("http://embedding-service:8080/embed") {
+                contentType(ContentType.Application.Json)
+                setBody(EmbedRequestDto(chunks))
+            }.body<EmbeddingsResponseDto>()
+
+            println("http://embedding-service:8000/embed: ${embeddingsResponse.embeddings}")
+
+            return embeddingsResponse.embeddings.mapIndexed { index, vector ->
+                val mixedIdString = "$noteId-$index"
+                val chunkId = java.util.UUID.nameUUIDFromBytes(mixedIdString.toByteArray()).toString()
+
+                val res = httpClient.put("$qdrantBaseUrl/collections/notes_chunks/points") {
+                    contentType(ContentType.Application.Json)
+                    setBody(buildJsonObject {
+                        putJsonArray("points") {
+                            add(buildJsonObject {
+                                put("id", chunkId)
+                                putJsonArray("vector") {
+                                    vector.forEach { add(it) }
+                                }
+                                putJsonObject("payload") {
+                                    put("note_id", noteId)
+                                    put("chunk_index", index)
+                                    put("text", chunks[index])
+                                }
+                            })
+                        }
+                    })
+                }
+
+                println("/collections/notes_chunks/points: ${res.bodyAsText()}")
+                println("chunkId: $chunkId")
+
+                chunkId
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return emptyList()
+        }
+    }
+}

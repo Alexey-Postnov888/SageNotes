@@ -146,16 +146,17 @@ services:
   index-service:
     build: ./IndexService
     environment:
-      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      ELASTICSEARCH_HOST: ${ELASTICSEARCH_HOST}
       ELASTICSEARCH_USERNAME: ${ELASTICSEARCH_USERNAME}
       ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
-      QDRANT_HOST: http://qdrant:6333
+      QDRANT_HOST: ${QDRANT_HOST}
     ports:
       - "8088:8080"
     depends_on:
       - qdrant
       - elasticsearch
       - temporal
+      - embedding-service
     restart: unless-stopped
 
   postgres_ocr:
@@ -180,6 +181,13 @@ services:
       - postgres_ocr
       - temporal
     restart: unless-stopped
+
+  embedding-service:
+    build: ./EmbeddingService
+    ports:
+      - "8090:8080"
+    volumes:
+      - model_cache:/app/models
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -294,3 +302,4 @@ volumes:
   ocr_data:
   redis_data:
   qdrant_data:
+  model_cache:
