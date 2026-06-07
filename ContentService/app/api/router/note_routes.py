@@ -80,7 +80,3 @@ async def delete_note(
             status_code=404,
             detail="Note not found"
         )
-
-    return {
-        "success": True
-    }

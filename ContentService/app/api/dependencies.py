@@ -4,6 +4,9 @@ from app.db import async_session
 from app.repositories.note_repository import NoteRepository
 from app.repositories.tag_repository import TagRepository
 from app.repositories.file_repository import FileRepository
+from app.use_case.files.delete_file import DeleteFileUseCase
+from app.use_case.files.get_url_file import GetUrlFileUseCase
+from app.use_case.files.upload_file import UploadFileUseCase
 from app.use_case.notes.create_note import CreateNoteUseCase
 from app.use_case.notes.delete_note import DeleteNoteUseCase
 from app.use_case.notes.get_note import GetNoteUseCase
@@ -80,3 +83,20 @@ def get_delete_tag_use_case(
         repository: TagRepository = Depends(get_tag_repository)
 ) -> DeleteTagUseCase:
     return DeleteTagUseCase(repository)
+
+
+# Файлы
+def get_upload_file_use_case(
+        repository: FileRepository = Depends(get_file_repository)
+) -> UploadFileUseCase:
+    return UploadFileUseCase(repository=repository)
+
+def get_delete_file_use_case(
+        repository: FileRepository = Depends(get_file_repository)
+) -> DeleteFileUseCase:
+    return DeleteFileUseCase(repository=repository)
+
+def get_url_file_use_case(
+        repository: FileRepository = Depends(get_file_repository)
+) -> GetUrlFileUseCase:
+    return GetUrlFileUseCase(repository=repository)

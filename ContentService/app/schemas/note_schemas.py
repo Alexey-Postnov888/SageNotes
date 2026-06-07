@@ -3,7 +3,6 @@ from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import Uuid
 
 from app.schemas.file_schemas import FileResponse
 from app.schemas.tag_schemas import TagResponse
@@ -25,7 +24,7 @@ class NoteUpdate(NoteBase):
 class NoteResponse(NoteBase):
     id: UUID
 
-    # files: list[FileResponse] = Field(default_factory=list)
+    files: list[FileResponse] = Field(default_factory=list)
     tags: list[TagResponse] = Field(default_factory=list)
 
     created_at: datetime
