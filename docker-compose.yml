@@ -172,6 +172,7 @@ services:
   ocr-service:
     build: ./OCRService
     environment:
+      POSTGRES_HOST: postgres_ocr
       POSTGRES_DB: ${POSTGRES_OCR_DB}
       POSTGRES_USER: ${POSTGRES_OCR_USER}
       POSTGRES_PASSWORD: ${POSTGRES_OCR_PASSWORD}
