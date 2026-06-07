@@ -12,6 +12,12 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER}
+          audience: ${KEYCLOAK_AUDIENCE}
   jackson:
     property-naming-strategy: SNAKE_CASE
   servlet:
