@@ -103,6 +103,17 @@ public class OCRServiceImpl implements OCRService {
     }
 
     @Override
+    public OCRResponseListDTO getOCRbyNote(String noteId) {
+        List<OCRModel> models = repository.findAllByNoteId(UUID.fromString(noteId));
+
+        List<OCRResponseDTO> files = models.stream()
+                .map(ocrModel -> new OCRResponseDTO(ocrModel.getFid().toString(), ocrModel.getText()))
+                .toList();
+
+        return new OCRResponseListDTO(noteId, files);
+    }
+
+    @Override
     public OCRResponseDTO getOCR(String fid) {
         Optional<OCRModel> model = repository.findById(UUID.fromString(fid));
         return model.map(ocrModel -> new OCRResponseDTO(ocrModel.getFid().toString(), ocrModel.getText())).orElse(null);

@@ -198,6 +198,7 @@ services:
       - postgres_ocr
       - temporal
       - seaweedfs
+      - auth-service
     restart: unless-stopped
 
   embedding-service:
