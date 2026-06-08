@@ -15,7 +15,8 @@ class IndexRepositoryImpl(
             val chunks = chunker.chunk(text)
             embeddingService.embed(
                 noteId = noteId,
-                chunks = chunks
+                chunks = chunks,
+                userId = userId,
             )
             elasticsearchService.index(noteId, text, userId)
         } catch (e: Exception) {

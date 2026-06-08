@@ -19,5 +19,6 @@ fun Application.module() {
 
     configureSerialization()
     configureStatusPagePlugin()
+    configureSecurity()
     configureIndexRouting()
 }

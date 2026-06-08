@@ -17,7 +17,7 @@ class ElasticsearchServiceImpl(
                     .id(noteId)
                     .document(mapOf(
                         "text" to text,
-                        "userId" to userId,
+                        "user_id" to userId,
                         "indexed_at" to Instant.now().toString()
                     ))
             }

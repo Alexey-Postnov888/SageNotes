@@ -26,6 +26,9 @@ dependencies {
 
     implementation(ktorLibs.server.statusPages)
 
+    implementation(ktorLibs.server.auth)
+    implementation(ktorLibs.server.auth.jwt)
+
     implementation("io.github.oshai:kotlin-logging-jvm:8.0.01")
 
     implementation("com.microsoft.onnxruntime:onnxruntime:1.16.3")

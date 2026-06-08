@@ -1,12 +1,12 @@
-package ru.sagenotes.indexservice.data.di
+package ru.sagenotes.searchservice.data.di
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient
 import co.elastic.clients.json.jackson.JacksonJsonpMapper
 import co.elastic.clients.transport.rest_client.RestClientTransport
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.serialization.kotlinx.json.*
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.apache.http.HttpHost
 import org.apache.http.auth.AuthScope
@@ -16,19 +16,17 @@ import org.elasticsearch.client.RestClient
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
-import ru.sagenotes.indexservice.data.config.ElasticsearchConfig
-import ru.sagenotes.indexservice.data.config.JwtConfig
-import ru.sagenotes.indexservice.data.config.QdrantConfig
-import ru.sagenotes.indexservice.data.repository.IndexRepositoryImpl
-import ru.sagenotes.indexservice.data.service.ElasticsearchService
-import ru.sagenotes.indexservice.data.service.ElasticsearchServiceImpl
-import ru.sagenotes.indexservice.data.service.EmbeddingService
-import ru.sagenotes.indexservice.data.service.EmbeddingServiceImpl
-import ru.sagenotes.indexservice.data.utils.Chunker
-import ru.sagenotes.indexservice.data.utils.ChunkerImpl
-import ru.sagenotes.indexservice.domain.repository.IndexRepository
-import ru.sagenotes.indexservice.domain.usecase.IndexUseCase
-import ru.sagenotes.indexservice.domain.usecase.IndexUseCaseImpl
+import ru.sagenotes.searchservice.data.config.ElasticsearchConfig
+import ru.sagenotes.searchservice.data.config.JwtConfig
+import ru.sagenotes.searchservice.data.config.QdrantConfig
+import ru.sagenotes.searchservice.data.repository.SearchRepositoryImpl
+import ru.sagenotes.searchservice.data.service.ElasticsearchService
+import ru.sagenotes.searchservice.data.service.ElasticsearchServiceImpl
+import ru.sagenotes.searchservice.data.service.QdrantService
+import ru.sagenotes.searchservice.data.service.QdrantServiceImpl
+import ru.sagenotes.searchservice.domain.repository.SearchRepository
+import ru.sagenotes.searchservice.domain.usecase.SearchUseCase
+import ru.sagenotes.searchservice.domain.usecase.SearchUseCaseImpl
 
 val networkModule = module {
     single {
@@ -69,17 +67,16 @@ val serviceModule = module {
         ElasticsearchClient(transport)
     }
 
-    singleOf(::EmbeddingServiceImpl) bind EmbeddingService::class
     singleOf(::ElasticsearchServiceImpl) bind ElasticsearchService::class
+    singleOf(::QdrantServiceImpl) bind QdrantService::class
 }
 
 val repositoryModule = module {
-    singleOf(::ChunkerImpl) bind Chunker::class
-    singleOf(::IndexRepositoryImpl) bind IndexRepository::class
+    singleOf(::SearchRepositoryImpl) bind SearchRepository::class
 }
 
 val useCaseModule = module {
-    singleOf(::IndexUseCaseImpl) bind IndexUseCase::class
+    singleOf(::SearchUseCaseImpl) bind SearchUseCase::class
 }
 
 val appModule = module {

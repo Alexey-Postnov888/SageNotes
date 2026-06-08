@@ -1,4 +1,4 @@
-package ru.sagenotes.indexservice.data.config
+package ru.sagenotes.searchservice.data.config
 
 data class QdrantConfig(
     private val host: String,
@@ -10,7 +10,7 @@ data class QdrantConfig(
     companion object {
         fun fromEnv() = QdrantConfig(
             host = requireNotNull(System.getenv("QDRANT_HOST")) { "QDRANT_HOST is required" },
-            collection = requireNotNull(System.getenv("QDRANT_COLLECTION")) { "QDRANT_COLLECTION is required" }
+            collection = requireNotNull(System.getenv("QDRANT_COLLECTION")) { "QDRANT_COLLECTION is required" },
         )
     }
 }
