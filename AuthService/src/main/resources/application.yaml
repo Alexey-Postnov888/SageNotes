@@ -3,5 +3,4 @@ ktor:
     port: 8080
   application:
     modules:
-      - ru.sagenotes.authservice.SerializationKt.configureSerialization
-      - ru.sagenotes.authservice.RoutingKt.configureRouting
+      - ru.sagenotes.authservice.MainKt.module

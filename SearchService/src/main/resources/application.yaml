@@ -3,6 +3,4 @@ ktor:
     port: 8080
   application:
     modules:
-      - ru.sagenotes.searchservice.HttpKt.configureHttp
-      - ru.sagenotes.searchservice.SerializationKt.configureSerialization
-      - ru.sagenotes.searchservice.RoutingKt.configureRouting
+      - ru.sagenotes.searchservice.MainKt.module
