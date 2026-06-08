@@ -1,4 +1,4 @@
-package ru.sagenotes.indexservice.data.di
+package ru.sagenotes.searchservice.data.di
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient
 import co.elastic.clients.json.jackson.JacksonJsonpMapper
@@ -16,25 +16,34 @@ import org.elasticsearch.client.RestClient
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
-import ru.sagenotes.indexservice.data.config.ElasticsearchConfig
-import ru.sagenotes.indexservice.data.config.JwtConfig
-import ru.sagenotes.indexservice.data.config.QdrantConfig
-import ru.sagenotes.indexservice.data.repository.IndexRepositoryImpl
-import ru.sagenotes.indexservice.data.service.ElasticsearchService
-import ru.sagenotes.indexservice.data.service.ElasticsearchServiceImpl
-import ru.sagenotes.indexservice.data.service.EmbeddingService
-import ru.sagenotes.indexservice.data.service.EmbeddingServiceImpl
-import ru.sagenotes.indexservice.data.utils.Chunker
-import ru.sagenotes.indexservice.data.utils.ChunkerImpl
-import ru.sagenotes.indexservice.domain.repository.IndexRepository
-import ru.sagenotes.indexservice.domain.usecase.IndexUseCase
-import ru.sagenotes.indexservice.domain.usecase.IndexUseCaseImpl
+import redis.clients.jedis.DefaultJedisClientConfig
+import redis.clients.jedis.HostAndPort
+import redis.clients.jedis.RedisClient
+import ru.sagenotes.searchservice.data.config.ElasticsearchConfig
+import ru.sagenotes.searchservice.data.config.JwtConfig
+import ru.sagenotes.searchservice.data.config.QdrantConfig
+import ru.sagenotes.searchservice.data.config.RedisConfig
+import ru.sagenotes.searchservice.data.repository.CachedSearchRepositoryImpl
+import ru.sagenotes.searchservice.data.repository.SearchRepositoryImpl
+import ru.sagenotes.searchservice.data.service.ElasticsearchService
+import ru.sagenotes.searchservice.data.service.ElasticsearchServiceImpl
+import ru.sagenotes.searchservice.data.service.QdrantService
+import ru.sagenotes.searchservice.data.service.QdrantServiceImpl
+import ru.sagenotes.searchservice.domain.repository.SearchRepository
+import ru.sagenotes.searchservice.domain.usecase.SearchUseCase
+import ru.sagenotes.searchservice.domain.usecase.SearchUseCaseImpl
 
 val networkModule = module {
     single {
+        Json {
+            ignoreUnknownKeys = true
+        }
+    }
+
+    single {
         HttpClient(CIO) {
             install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true })
+                json(get<Json>())
             }
         }
     }
@@ -44,6 +53,7 @@ val configModule = module {
     single { JwtConfig.fromEnv() }
     single { ElasticsearchConfig.fromEnv() }
     single { QdrantConfig.fromEnv() }
+    single { RedisConfig.fromEnv() }
 }
 
 val serviceModule = module {
@@ -69,17 +79,40 @@ val serviceModule = module {
         ElasticsearchClient(transport)
     }
 
-    singleOf(::EmbeddingServiceImpl) bind EmbeddingService::class
     singleOf(::ElasticsearchServiceImpl) bind ElasticsearchService::class
+    singleOf(::QdrantServiceImpl) bind QdrantService::class
 }
 
 val repositoryModule = module {
-    singleOf(::ChunkerImpl) bind Chunker::class
-    singleOf(::IndexRepositoryImpl) bind IndexRepository::class
+    single<RedisClient> {
+        val config = get<RedisConfig>()
+
+        val clientConfig = DefaultJedisClientConfig.builder()
+            .timeoutMillis(5000)
+            .apply {
+                password(config.password)
+            }
+            .build()
+
+        RedisClient.builder()
+            .hostAndPort(HostAndPort(config.host, config.port))
+            .clientConfig(clientConfig)
+            .build()
+    }
+
+    singleOf(::SearchRepositoryImpl)
+
+    single<SearchRepository> {
+        CachedSearchRepositoryImpl(
+            delegate = get<SearchRepositoryImpl>(),
+            redisClient = get(),
+            json = get()
+        )
+    }
 }
 
 val useCaseModule = module {
-    singleOf(::IndexUseCaseImpl) bind IndexUseCase::class
+    singleOf(::SearchUseCaseImpl) bind SearchUseCase::class
 }
 
 val appModule = module {
