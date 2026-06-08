@@ -14,8 +14,7 @@ class Note(Base):
 
     title: Mapped[str] = mapped_column(String)
     content: Mapped[str] = mapped_column(Text)
-    user_id: Mapped[UUID | None] = mapped_column(SA_UUID, nullable=True)
-    # user_id: Mapped[UUID] = mapped_column(SA_UUID, nullable=False) TODO на время разработки, потом надо вернуть !!
+    user_id: Mapped[UUID] = mapped_column(SA_UUID, nullable=False)
 
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),

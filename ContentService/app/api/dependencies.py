@@ -11,11 +11,13 @@ from app.use_case.notes.create_note import CreateNoteUseCase
 from app.use_case.notes.delete_note import DeleteNoteUseCase
 from app.use_case.notes.get_note import GetNoteUseCase
 from app.use_case.notes.get_notes import GetNotesUseCase
+from app.use_case.notes.get_notes_by_user_id import GetNotesByUserIdUseCase
 from app.use_case.notes.update_note import UpdateNoteUseCase
 from app.use_case.tags.create_tag import CreateTagUseCase
 from app.use_case.tags.delete_tag import DeleteTagUseCase
 from app.use_case.tags.get_tag import GetTagUseCase
 from app.use_case.tags.get_tags import GetTagsUseCase
+from app.use_case.tags.get_tags_by_user_id import GetTagsByUserIdUseCase
 from app.use_case.tags.update_tag import UpdateTagUseCase
 
 # Репозитории
@@ -41,6 +43,10 @@ def get_notes_use_case(
 ) -> GetNotesUseCase:
     return GetNotesUseCase(repository)
 
+def get_notes_by_user_id_use_case(
+    repository: NoteRepository = Depends(get_note_repository),
+) -> GetNotesByUserIdUseCase:
+    return GetNotesByUserIdUseCase(repository)
 
 def get_create_note_use_case(
     repository: NoteRepository = Depends(get_note_repository),
@@ -64,10 +70,10 @@ def get_tag_use_case(
 ) -> GetTagUseCase:
     return GetTagUseCase(repository)
 
-def get_tags_use_case(
+def get_tags_by_user_id_use_case(
         repository: TagRepository = Depends(get_tag_repository)
-) -> GetTagsUseCase:
-    return GetTagsUseCase(repository)
+) -> GetTagsByUserIdUseCase:
+    return GetTagsByUserIdUseCase(repository)
 
 def get_create_tag_use_case(
         repository: TagRepository = Depends(get_tag_repository)
@@ -87,16 +93,28 @@ def get_delete_tag_use_case(
 
 # Файлы
 def get_upload_file_use_case(
-        repository: FileRepository = Depends(get_file_repository)
+    note_repository: NoteRepository = Depends(get_note_repository),
+    file_repository: FileRepository = Depends(get_file_repository)
 ) -> UploadFileUseCase:
-    return UploadFileUseCase(repository=repository)
+    return UploadFileUseCase(
+        repository_for_notes=note_repository,
+        repository_for_files=file_repository
+    )
 
 def get_delete_file_use_case(
-        repository: FileRepository = Depends(get_file_repository)
+    note_repository: NoteRepository = Depends(get_note_repository),
+    file_repository: FileRepository = Depends(get_file_repository)
 ) -> DeleteFileUseCase:
-    return DeleteFileUseCase(repository=repository)
+    return DeleteFileUseCase(
+        repository_for_notes=note_repository,
+        repository_for_files=file_repository
+    )
 
 def get_url_file_use_case(
-        repository: FileRepository = Depends(get_file_repository)
+    note_repository: NoteRepository = Depends(get_note_repository),
+    file_repository: FileRepository = Depends(get_file_repository)
 ) -> GetUrlFileUseCase:
-    return GetUrlFileUseCase(repository=repository)
+    return GetUrlFileUseCase(
+        repository_for_notes=note_repository,
+        repository_for_files=file_repository
+    )

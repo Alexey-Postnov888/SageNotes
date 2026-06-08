@@ -6,5 +6,13 @@ class DeleteNoteUseCase:
     def __init__(self, repository: NoteRepository):
         self.repository = repository
 
-    async def execute(self, note_id: str):
+    async def execute(self, user_id: str, note_id: str):
+
+        note = await self.repository.get(note_id)
+        if not note:
+            return None
+
+        if str(note.user_id) != user_id:
+            return None
+
         return await self.repository.delete(note_id)

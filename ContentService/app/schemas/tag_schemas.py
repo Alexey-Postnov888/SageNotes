@@ -10,7 +10,7 @@ class TagBase(BaseModel):
 
 
 class TagCreate(TagBase):
-    pass
+    user_id: Optional[UUID] = None
 
 
 class TagUpdate(TagBase):
@@ -20,5 +20,5 @@ class TagUpdate(TagBase):
 
 class TagResponse(TagBase):
     id: UUID
-
+    user_id: UUID
     model_config = ConfigDict(from_attributes=True)
