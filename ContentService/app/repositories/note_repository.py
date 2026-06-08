@@ -13,7 +13,7 @@ class NoteRepository(BaseRepository[Note, NoteCreate, NoteUpdate]):
 
     async def create(self, data: NoteCreate) -> str:
         async with self._session() as session:
-            note = self.model_cls(title=data.title, content=data.content)
+            note = self.model_cls(title=data.title, content=data.content, user_id=data.user_id)
 
             session.add(note)
 
@@ -21,8 +21,6 @@ class NoteRepository(BaseRepository[Note, NoteCreate, NoteUpdate]):
                 tags = await session.execute(select(Tag).where(Tag.id.in_(data.tags)))
                 tags_list = list(tags.scalars().all())
                 note.tags = tags_list
-
-            # TODO нужно еще файлы сохранять
 
             await session.commit()
             return str(note.id)
@@ -40,8 +38,6 @@ class NoteRepository(BaseRepository[Note, NoteCreate, NoteUpdate]):
             if data.tags is not None:
                 tags = await session.execute(select(Tag).where(Tag.id.in_(data.tags)))
                 note.tags = list(tags.scalars().all())
-
-            # TODO файлы
 
             await session.commit()
 
@@ -61,6 +57,17 @@ class NoteRepository(BaseRepository[Note, NoteCreate, NoteUpdate]):
         async with self._session() as session:
             result = await session.execute(
                 select(self.model_cls)
+                .options(selectinload(self.model_cls.tags))
+                .order_by(self.model_cls.created_at.desc())
+            )
+
+            return list(result.scalars().all())
+
+    async def get_all_by_user_id(self, user_id: str) -> list[Note]:
+        async with self._session() as session:
+            result = await session.execute(
+                select(self.model_cls)
+                .where(self.model_cls.user_id == UUID(user_id))
                 .options(selectinload(self.model_cls.tags))
                 .order_by(self.model_cls.created_at.desc())
             )

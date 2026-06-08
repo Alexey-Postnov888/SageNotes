@@ -15,6 +15,7 @@ class NoteBase(BaseModel):
 
 class NoteCreate(NoteBase):
     tags: list[str] = Field(default_factory=list)
+    user_id: Optional[UUID] = None
 
 
 class NoteUpdate(NoteBase):
@@ -26,6 +27,7 @@ class NoteResponse(NoteBase):
 
     files: list[FileResponse] = Field(default_factory=list)
     tags: list[TagResponse] = Field(default_factory=list)
+    user_id: UUID
 
     created_at: datetime
     updated_at: datetime

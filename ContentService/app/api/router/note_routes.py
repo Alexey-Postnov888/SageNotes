@@ -1,30 +1,38 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 
-from app.api.dependencies import (get_note_use_case, get_notes_use_case, get_create_note_use_case,
-                                  get_update_note_use_case,get_delete_note_use_case)
+from app.api.dependencies import (get_note_use_case, get_create_note_use_case,
+                                  get_update_note_use_case, get_delete_note_use_case, get_notes_by_user_id_use_case)
+from app.auth import keycloak_auth, get_current_user_id
 from app.schemas.note_schemas import NoteResponse, NoteCreate, NoteUpdate
 from app.use_case.notes.create_note import CreateNoteUseCase
 from app.use_case.notes.delete_note import DeleteNoteUseCase
 from app.use_case.notes.get_note import GetNoteUseCase
-from app.use_case.notes.get_notes import GetNotesUseCase
+from app.use_case.notes.get_notes_by_user_id import GetNotesByUserIdUseCase
 from app.use_case.notes.update_note import UpdateNoteUseCase
 
-router = APIRouter(prefix="/notes", tags=["notes"])
+router = APIRouter(prefix="/notes",
+                   tags=["notes"],
+                   dependencies=[Depends(keycloak_auth)])
 
-@router.get("", response_model=list[NoteResponse])
-async def get_notes(use_case: GetNotesUseCase = Depends(get_notes_use_case)):
+@router.get("/user", response_model=list[NoteResponse])
+async def get_notes_by_user_id(
+        request: Request,
+        use_case: GetNotesByUserIdUseCase = Depends(get_notes_by_user_id_use_case)):
 
-    notes = await use_case.execute()
+    user_id = get_current_user_id(request)
+    notes = await use_case.execute(user_id = user_id)
 
     return notes
 
 @router.get("/{note_id}")
 async def get_note(
+    request: Request,
     note_id: str,
     use_case: GetNoteUseCase = Depends(get_note_use_case)
 ):
 
-    note = await use_case.execute(note_id)
+    user_id = get_current_user_id(request)
+    note = await use_case.execute(user_id=user_id, note_id=note_id)
 
     if note is None:
         raise HTTPException(
@@ -38,11 +46,12 @@ async def get_note(
 
 @router.post("", response_model=dict, status_code=201)
 async def create_note(
+    request: Request,
     data: NoteCreate,
     use_case: CreateNoteUseCase = Depends(get_create_note_use_case)
 ):
-
-    note_id = await use_case.execute(data)
+    user_id = get_current_user_id(request)
+    note_id = await use_case.execute(user_id=user_id, data=data)
 
     return {
         "note_id": note_id
@@ -50,12 +59,13 @@ async def create_note(
 
 @router.put("/{note_id}", response_model=dict, status_code=200)
 async def update_note(
+    request: Request,
     note_id: str,
     data: NoteUpdate,
     use_case: UpdateNoteUseCase = Depends(get_update_note_use_case)
 ):
-
-    updated_note_id = await use_case.execute(note_id, data)
+    user_id = get_current_user_id(request)
+    updated_note_id = await use_case.execute(user_id=user_id, note_id=note_id, data=data)
 
     if updated_note_id is None:
         raise HTTPException(
@@ -69,11 +79,13 @@ async def update_note(
 
 @router.delete("/{note_id}", status_code=204)
 async def delete_note(
+    request: Request,
     note_id: str,
     use_case: DeleteNoteUseCase = Depends(get_delete_note_use_case)
 ):
 
-    deleted = await use_case.execute(note_id)
+    user_id = get_current_user_id(request)
+    deleted = await use_case.execute(user_id=user_id, note_id=note_id)
 
     if not deleted:
         raise HTTPException(

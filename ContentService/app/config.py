@@ -36,3 +36,31 @@ s3_client = boto3.client(
     region_name=settingS3.AWS_REGION,
     config=Config(signature_version="s3v4", s3={"addressing_style": "path"})
 )
+
+
+class SettingKeycloak(BaseSettings):
+    KEYCLOAK_URL: str
+    REALM: str
+    CLIENT_ID: str
+    CLIENT_SECRET: str
+    KEYCLOAK_AUDIENCE: str
+
+
+    @property
+    def issuer(self) -> str:
+        return f"{self.KEYCLOAK_URL}/realms/{self.REALM}"
+
+    @property
+    def jwks_url(self) -> str:
+        return f"{self.issuer}/protocol/openid-connect/certs"
+
+    @property
+    def token_url(self) -> str:
+        return f"{self.issuer}/protocol/openid-connect/token"
+
+    @property
+    def userinfo_url(self) -> str:
+        return f"{self.issuer}/protocol/openid-connect/userinfo"
+
+
+settingKeycloak = SettingKeycloak()
