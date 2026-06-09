@@ -110,6 +110,12 @@ services:
 
   ai-service:
     build: ./AIService
+    environment:
+      YANDEX_CLOUD_FOLDER: ${YANDEX_CLOUD_FOLDER}
+      YANDEX_CLOUD_API_KEY: ${YANDEX_CLOUD_API_KEY}
+      YANDEX_CLOUD_MODEL: ${YANDEX_CLOUD_MODEL}
+      SUMMARIZE_TEMPERATURE: ${SUMMARIZE_TEMPERATURE}
+      SUMMARIZE_MAX_TOKENS: ${SUMMARIZE_MAX_TOKENS}
     ports:
       - "8086:8080"
     depends_on:
