@@ -4,5 +4,4 @@ ktor:
   application:
     modules:
       - ru.sagenotes.gateway.SerializationKt.configureSerialization
-      - ru.sagenotes.gateway.WebsocketsKt.configureWebsockets
       - ru.sagenotes.gateway.RoutingKt.configureRouting

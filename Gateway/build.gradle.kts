@@ -23,6 +23,12 @@ dependencies {
     implementation(ktorLibs.server.websockets)
     implementation(libs.logback.classic)
 
+    implementation(ktorLibs.client.core)
+    implementation(ktorLibs.client.cio)
+    implementation(ktorLibs.client.contentNegotiation)
+
+    implementation(ktorLibs.server.statusPages)
+
     testImplementation(kotlin("test"))
     testImplementation(ktorLibs.server.testHost)
 }
