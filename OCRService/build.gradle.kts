@@ -28,6 +28,9 @@ dependencies {
     implementation("org.apache.pdfbox:pdfbox:3.0.3")
     implementation("net.sourceforge.tess4j:tess4j:5.17.0")
     implementation("org.bytedeco:javacv-platform:1.5.13")
+    implementation("software.amazon.awssdk:s3:2.25.0")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("io.temporal:temporal-sdk:1.25.0")
 
     compileOnly("org.projectlombok:lombok:1.18.46")

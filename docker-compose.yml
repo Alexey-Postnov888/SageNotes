@@ -79,10 +79,16 @@ services:
       KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE}
       REALM: ${REALM}
       QDRANT_COLLECTION: ${QDRANT_COLLECTION}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     ports:
       - "8084:8080"
     depends_on:
-      - rabbitmq
+      - auth-service
+      - index-service
+      - elasticsearch
+      - qdrant
+      - redis
     restart: unless-stopped
 
   ai-gateway:
@@ -104,6 +110,12 @@ services:
 
   ai-service:
     build: ./AIService
+    environment:
+      YANDEX_CLOUD_FOLDER: ${YANDEX_CLOUD_FOLDER}
+      YANDEX_CLOUD_API_KEY: ${YANDEX_CLOUD_API_KEY}
+      YANDEX_CLOUD_MODEL: ${YANDEX_CLOUD_MODEL}
+      SUMMARIZE_TEMPERATURE: ${SUMMARIZE_TEMPERATURE}
+      SUMMARIZE_MAX_TOKENS: ${SUMMARIZE_MAX_TOKENS}
     ports:
       - "8086:8080"
     depends_on:
@@ -144,6 +156,7 @@ services:
 
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
       S3_BUCKET: ${S3_BUCKET}
       S3_ENDPOINT: ${S3_ENDPOINT}
 
@@ -202,11 +215,19 @@ services:
       POSTGRES_DB: ${POSTGRES_OCR_DB}
       POSTGRES_USER: ${POSTGRES_OCR_USER}
       POSTGRES_PASSWORD: ${POSTGRES_OCR_PASSWORD}
+      S3_BUCKET: ${S3_BUCKET}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER}
+      KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE}
     ports:
       - "8089:8080"
     depends_on:
       - postgres_ocr
       - temporal
+      - seaweedfs
+      - auth-service
     restart: unless-stopped
 
   embedding-service:

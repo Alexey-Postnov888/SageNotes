@@ -12,7 +12,22 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://${KEYCLOAK_ISSUER}
+          audience: ${KEYCLOAK_AUDIENCE}
+  jackson:
+    property-naming-strategy: SNAKE_CASE
   servlet:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
+s3:
+  endpoint: ${S3_ENDPOINT:http://seaweedfs:8333}
+  bucket:
+    name: ${S3_BUCKET}
+  access-key: ${AWS_ACCESS_KEY_ID}
+  secret-key: ${AWS_SECRET_ACCESS_KEY}
+  region: ${AWS_REGION}
