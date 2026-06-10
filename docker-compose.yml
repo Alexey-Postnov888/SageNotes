@@ -149,7 +149,7 @@ services:
   content-service:
     build: ./ContentService
     environment:
-      TEMPORAL_HOST: http://temporal:7233
+      TEMPORAL_HOST: temporal:7233
       POSTGRES_CONTENT_DB: ${POSTGRES_CONTENT_DB}
       POSTGRES_CONTENT_USER: ${POSTGRES_CONTENT_USER}
       POSTGRES_CONTENT_PASSWORD: ${POSTGRES_CONTENT_PASSWORD}
@@ -169,12 +169,14 @@ services:
       KEYCLOAK_CERTS: ${KEYCLOAK_CERTS}
     ports:
       - "8087:8080"
+      - "9097:9090"
     depends_on:
       - temporal
       - seaweedfs
       - index-service
       - ocr-service
       - postgres_content
+      - auth-service
     restart: unless-stopped
 
   index-service:

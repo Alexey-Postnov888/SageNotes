@@ -22,10 +22,10 @@ class UploadFileUseCase:
         note = await self.repository_for_notes.get(note_id)
 
         if not note:
-            raise Exception("Note not found or User not authenticated")
+            raise Exception("Note not found")
 
         if str(note.user_id) != user_id:
-            raise Exception("Note not found or User not authenticated")
+            raise Exception("User not owner of the note")
 
 
         try:
