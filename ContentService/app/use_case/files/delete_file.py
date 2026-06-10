@@ -16,10 +16,10 @@ class DeleteFileUseCase:
 
         note = await self.repository_for_notes.get(str(file.note_id))
         if not note:
-            raise Exception("Note not found or User not authenticated")
+            raise Exception("Note not found")
 
         if str(note.user_id) != user_id:
-            raise Exception("Note not found or User not authenticated")
+            raise Exception("User not owner of the note")
 
         key = file.key
         delete_from_s3 = await s3_service.delete_file(key)
