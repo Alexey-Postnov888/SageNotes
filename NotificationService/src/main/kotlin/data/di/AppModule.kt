@@ -15,6 +15,8 @@ import ru.sagenotes.notificationservice.domain.repository.NotificationRepository
 import ru.sagenotes.notificationservice.domain.usecase.ProcessNotificationUseCase
 import ru.sagenotes.notificationservice.domain.usecase.ProcessNotificationUseCaseImpl
 import ru.sagenotes.notificationservice.presentation.consumer.RabbitMqConsumer
+import ru.sagenotes.notificationservice.presentation.route.grpc.NotificationGrpcService
+import ru.sagenotes.notificationservice.presentation.route.grpc.interceptor.JwtAuthInterceptor
 
 val configModule = module {
     single { JwtConfig.fromEnv() }
@@ -61,12 +63,18 @@ val consumerModule = module {
     singleOf(::RabbitMqConsumer)
 }
 
+val grpcModule = module {
+    singleOf(::JwtAuthInterceptor)
+    singleOf(::NotificationGrpcService)
+}
+
 val appModule = module {
     includes(
         networkModule,
         configModule,
         repositoryModule,
         useCaseModule,
-        consumerModule
+        consumerModule,
+        grpcModule
     )
 }

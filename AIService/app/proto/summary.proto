@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package summary;
+
+service SummaryService {
+    rpc Summarize (SummarizeRequest) returns (SummarizeResponse);
+}
+
+message SummarizeRequest {
+    string note_id = 1;
+    string text = 2;
+    string user_id = 3;
+}
+
+message SummarizeResponse {
+    string note_id = 1;
+    string summary = 2;
+}
+
