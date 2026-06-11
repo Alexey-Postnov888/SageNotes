@@ -8,6 +8,6 @@ class SummarizeNoteUseCase:
     def __init__(self, summarizer: ISummarizer) -> None:
         self._summarizer = summarizer
 
-    async def execute(self, note_id: str, text: str) -> Summary:
+    async def execute(self, note_id: str, text: str, user_id: str = "anonymous") -> Summary:
         note = Note(note_id=note_id, text=text)
-        return await self._summarizer.summarize(note)
+        return await self._summarizer.summarize(note, user_id=user_id)

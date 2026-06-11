@@ -5,19 +5,21 @@ from app.config import settings
 from app.domain.entities import Note, Summary
 from app.domain.interfaces import ISummarizer
 from app.exceptions import NoteTextEmptyError, SummarizationFailedError
+from app.infrastructure.rabbitmq_publisher import RabbitMQPublisher
 
 
 class YandexCloudSummarizer(ISummarizer):
     """Реализация суммаризации через YandexCloud."""
 
-    def __init__(self) -> None:
+    def __init__(self, rabbitmq: RabbitMQPublisher | None = None) -> None:
         self._client = OpenAI(
             api_key=settings.yandex_cloud_api_key,
             base_url="https://ai.api.cloud.yandex.net/v1",
         )
         self._model = f"gpt://{settings.yandex_cloud_folder}/{settings.yandex_cloud_model}"
+        self._rabbitmq = rabbitmq
 
-    async def summarize(self, note: Note) -> Summary:
+    async def summarize(self, note: Note, user_id: str = "anonymous") -> Summary:
         self._validate_note(note)
 
         try:
@@ -45,7 +47,19 @@ class YandexCloudSummarizer(ISummarizer):
             if summary_text is None:
                 raise SummarizationFailedError("Модель вернула пустой ответ")
 
-            return Summary(note_id=note.note_id, summary=summary_text.strip())
+            summary = Summary(note_id=note.note_id, summary=summary_text.strip())
+
+            if self._rabbitmq:
+                try:
+                    await self._rabbitmq.publish_summary_completed(
+                        note_id=summary.note_id,
+                        summary=summary.summary,
+                        user_id=user_id,
+                 )
+                except Exception as e:
+                    print(f"⚠️ Ошибка отправки в RabbitMQ: {e}")
+
+            return summary
 
         except openai.APIError as e:
             raise SummarizationFailedError(f"Ошибка API YandexCloud: {e}") from e
