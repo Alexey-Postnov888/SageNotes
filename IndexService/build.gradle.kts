@@ -91,6 +91,12 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-core:2.17.2")
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.17.2")
 
+    implementation("co.elastic.clients:elasticsearch-java:8.11.1")
+    implementation("org.elasticsearch.client:elasticsearch-rest-client:8.11.1")
+
+    implementation("io.ktor:ktor-server-metrics-micrometer:3.5.0")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.10.3")
+
     testImplementation(kotlin("test"))
     testImplementation(ktorLibs.server.testHost)
 }

@@ -79,6 +79,9 @@ dependencies {
     implementation("io.grpc:grpc-stub:1.59.0")
     implementation("io.grpc:grpc-kotlin-stub:1.4.1")
 
+    implementation("io.ktor:ktor-server-metrics-micrometer:3.5.0")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.10.3")
+
     testImplementation(kotlin("test"))
     testImplementation(ktorLibs.server.testHost)
 }

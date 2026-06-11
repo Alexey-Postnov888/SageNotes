@@ -31,6 +31,8 @@ fun Application.module() {
     configureIndexRouting()
 
     configureGrpcServer()
+
+    configureMetrics()
 }
 
 fun Application.configureGrpcServer() {

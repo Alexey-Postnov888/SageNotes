@@ -29,6 +29,8 @@ fun Application.module() {
     configureAuthRouting()
 
     configureGrpcServer()
+
+    configureMetrics()
 }
 
 fun Application.configureGrpcServer() {

@@ -9,6 +9,24 @@ scrape_configs:
     metrics_path: /metrics
     scrape_interval: 5s
 
+  - job_name: 'ocr-service'
+    static_configs:
+      - targets: [ 'ocr-service:8080' ]
+    metrics_path: /metrics
+    scrape_interval: 5s
+
+  - job_name: 'index-service'
+    static_configs:
+      - targets: [ 'index-service:8080' ]
+    metrics_path: /metrics
+    scrape_interval: 5s
+
+  - job_name: 'auth-service'
+    static_configs:
+      - targets: [ 'auth-service:8080' ]
+    metrics_path: /metrics
+    scrape_interval: 5s
+
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:59090']
