@@ -93,6 +93,9 @@ dependencies {
 
     implementation("com.fasterxml.jackson.core:jackson-databind:2.16.0")
 
+    implementation("io.ktor:ktor-server-metrics-micrometer:3.5.0")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.10.3")
+
     testImplementation(kotlin("test"))
     testImplementation(ktorLibs.server.testHost)
 }
