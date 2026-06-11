@@ -72,6 +72,7 @@ services:
       MONGO_DATABASE: ${MONGO_DATABASE}
     ports:
       - "8083:8080"
+      - "9093:9090"
     depends_on:
       - rabbitmq
     restart: unless-stopped
