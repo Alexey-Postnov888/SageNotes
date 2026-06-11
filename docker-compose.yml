@@ -236,6 +236,7 @@ services:
     build: ./EmbeddingService
     ports:
       - "8090:8080"
+      - "9090:9090"
     volumes:
       - model_cache:/app/models
 
