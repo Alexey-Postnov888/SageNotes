@@ -3,11 +3,14 @@ import json
 
 import grpc
 from jose import jwt
+from temporalio.client import Client
 
-from app.proto import summary_pb2, summary_pb2_grpc  # type: ignore
+from app.proto import summary_pb2, summary_pb2_grpc
 from app.domain.entities import Note
 from app.infrastructure.auth import keycloak_auth, rsa_public_key_from_jwk
 from app.exceptions import NoteTextEmptyError, SummarizationFailedError
+
+TASK_QUEUE = "summarization-task-queue"
 
 
 class SummaryGrpcServicer(summary_pb2_grpc.SummaryServiceServicer):
@@ -57,12 +60,18 @@ class SummaryGrpcServicer(summary_pb2_grpc.SummaryServiceServicer):
     ) -> summary_pb2.SummarizeResponse:
         try:
             user_id = self._get_user_id_from_metadata(context)
-            note = Note(note_id=request.note_id, text=request.text)
-            result = await self._use_case._summarizer.summarize(note, user_id=user_id)
+
+            client = await Client.connect("temporal:7233", namespace="default")
+            result = await client.execute_workflow(
+                "SummarizationWorkflow",
+                args=[request.note_id, request.text, user_id],
+                id=f"summary-grpc-{request.note_id}",
+                task_queue=TASK_QUEUE,
+            )
 
             return summary_pb2.SummarizeResponse(
-                note_id=result.note_id,
-                summary=result.summary,
+                note_id=result["note_id"],
+                summary=result["summary"],
             )
         except NoteTextEmptyError as e:
             await context.abort(grpc.StatusCode.INVALID_ARGUMENT, str(e))
