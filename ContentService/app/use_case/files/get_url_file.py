@@ -1,6 +1,5 @@
 from app.repositories.file_repository import FileRepository
 from app.repositories.note_repository import NoteRepository
-from app.schemas.note_schemas import NoteResponse
 from app.services.S3_service import s3_service
 
 
@@ -17,10 +16,10 @@ class GetUrlFileUseCase:
 
         note = await self.repository_for_notes.get(str(file.note_id))
         if not note:
-            raise Exception("Note not found or User not authenticated")
+            raise Exception("Note not found")
 
         if str(note.user_id) != user_id:
-            raise Exception("Note not found or User not authenticated")
+            raise Exception("User not owner of the note")
 
         key = file.key
         url = await s3_service.generate_presigned_url(key)

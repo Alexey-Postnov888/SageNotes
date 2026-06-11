@@ -121,17 +121,25 @@ services:
 
   ai-service:
     build: ./AIService
+    ports:
+      - "8086:8080"
+      - "9090:9090"
+    depends_on:
+      - temporal
+      - rabbitmq
+    restart: unless-stopped
     environment:
       YANDEX_CLOUD_FOLDER: ${YANDEX_CLOUD_FOLDER}
       YANDEX_CLOUD_API_KEY: ${YANDEX_CLOUD_API_KEY}
       YANDEX_CLOUD_MODEL: ${YANDEX_CLOUD_MODEL}
-      SUMMARIZE_TEMPERATURE: ${SUMMARIZE_TEMPERATURE}
-      SUMMARIZE_MAX_TOKENS: ${SUMMARIZE_MAX_TOKENS}
-    ports:
-      - "8086:8080"
-    depends_on:
-      - temporal
-    restart: unless-stopped
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      RABBITMQ_VIRTUAL_HOST: ${RABBITMQ_VIRTUAL_HOST}
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: master
+      KEYCLOAK_AUDIENCE: account
 
   postgres_content:
     image: postgres:15
@@ -160,7 +168,7 @@ services:
   content-service:
     build: ./ContentService
     environment:
-      TEMPORAL_HOST: http://temporal:7233
+      TEMPORAL_HOST: temporal:7233
       POSTGRES_CONTENT_DB: ${POSTGRES_CONTENT_DB}
       POSTGRES_CONTENT_USER: ${POSTGRES_CONTENT_USER}
       POSTGRES_CONTENT_PASSWORD: ${POSTGRES_CONTENT_PASSWORD}
@@ -180,12 +188,14 @@ services:
       KEYCLOAK_CERTS: ${KEYCLOAK_CERTS}
     ports:
       - "8087:8080"
+      - "9097:9090"
     depends_on:
       - temporal
       - seaweedfs
       - index-service
       - ocr-service
       - postgres_content
+      - auth-service
     restart: unless-stopped
 
   index-service:
@@ -235,6 +245,7 @@ services:
       KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE}
     ports:
       - "8089:8080"
+      - "9099:9090"
     depends_on:
       - postgres_ocr
       - temporal
@@ -246,6 +257,7 @@ services:
     build: ./EmbeddingService
     ports:
       - "8090:8080"
+      - "9090:9090"
     volumes:
       - model_cache:/app/models
 
@@ -258,7 +270,7 @@ services:
       - "5672:5672"
       - "15672:15672"
     healthcheck:
-      test: [ "CMD", "rabbitmq-diagnostics", "check_running" ]
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
       interval: 10s
       timeout: 5s
       retries: 5

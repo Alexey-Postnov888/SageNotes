@@ -12,8 +12,14 @@ import base64
 from app.config import settingKeycloak
 
 
+def extract_token(request: Request) -> str:
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid or missing Authorization header")
+    return auth_header.split(" ")[1]
+
+
 def rsa_public_key_from_jwk(jwk: dict) -> str:
-    """Convert JWK to PEM format public key"""
     n = base64.urlsafe_b64decode(jwk['n'] + '==')
     e = base64.urlsafe_b64decode(jwk['e'] + '==')
 
@@ -93,16 +99,15 @@ class KeycloakJWTBearer(HTTPBearer):
 
             public_key = rsa_public_key_from_jwk(key_data)
 
-            # Проверяем ВСЁ: подпись, издателя, аудиенцию, срок действия
             payload = jwt.decode(
                 token,
                 public_key,
                 algorithms=['RS256'],
-                audience=self.audience,  # Проверяем audience = "gateway"
+                audience=self.audience,
                 issuer=self.issuer,
                 options={
                     "verify_signature": True,
-                    "verify_aud": True,  # Включаем проверку audience
+                    "verify_aud": True,
                     "verify_iss": True,
                     "verify_exp": True,
                 }
