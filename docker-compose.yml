@@ -123,7 +123,7 @@ services:
     build: ./AIService
     ports:
       - "8086:8080"
-      - "9090:9090"
+      - "9096:9090"
     depends_on:
       - temporal
       - rabbitmq
